@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 07-10-2026 a las 01:28:36
+-- Tiempo de generación: 16-10-2026 a las 23:06:54
 -- Versión del servidor: 10.11.14-MariaDB-0ubuntu0.24.04.1
 -- Versión de PHP: 8.3.6
 
@@ -39,14 +39,14 @@ CREATE TABLE `bicicleta` (
 --
 
 INSERT INTO `bicicleta` (`id`, `numero_serie`, `estado`, `id_estacion`) VALUES
-(1, 'B001', 'DISPONIBLE', 1),
-(2, 'B002', 'DISPONIBLE', 3),
+(1, 'B001', 'DISPONIBLE', 3),
+(2, 'B002', 'DISPONIBLE', 1),
 (3, 'B003', 'EN MANTENIMIENTO', 1),
-(4, 'B004', 'DISPONIBLE', 2),
+(4, 'B004', 'DISPONIBLE', 5),
 (5, 'B005', 'DISPONIBLE', 5),
 (6, 'B006', 'DISPONIBLE', 4),
 (7, 'B007', 'EN USO', 5),
-(8, 'B008', 'DISPONIBLE', 3);
+(8, 'B008', 'DISPONIBLE', 2);
 
 -- --------------------------------------------------------
 
@@ -181,11 +181,11 @@ INSERT INTO `usuario_medio_pago` (`id`, `id_usuario`, `numero_tarjeta`) VALUES
 CREATE TABLE `viaje` (
   `id` int(11) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
-  `fecha_fin` datetime NOT NULL,
+  `fecha_fin` datetime DEFAULT NULL,
   `id_usuario` int(11) NOT NULL,
   `id_bicicleta` int(11) NOT NULL,
   `id_estacion_origen` int(11) NOT NULL,
-  `id_estacion_destino` int(11) NOT NULL
+  `id_estacion_destino` int(11) DEFAULT NULL
 ) ;
 
 --
@@ -199,7 +199,12 @@ INSERT INTO `viaje` (`id`, `fecha_inicio`, `fecha_fin`, `id_usuario`, `id_bicicl
 (4, '2026-10-03 09:00:00', '2026-10-03 09:20:00', 3, 4, 5, 2),
 (5, '2026-10-03 12:00:00', '2026-10-03 12:30:00', 4, 5, 3, 5),
 (6, '2026-10-04 08:15:00', '2026-10-04 08:50:00', 5, 8, 4, 3),
-(7, '2026-10-04 17:30:00', '2026-10-04 18:05:00', 6, 6, 1, 4);
+(7, '2026-10-04 17:30:00', '2026-10-04 18:05:00', 6, 6, 1, 4),
+(8, '2026-10-05 07:45:00', '2026-10-05 08:10:00', 2, 1, 1, 3),
+(9, '2026-10-06 13:00:00', '2026-10-06 13:45:00', 3, 2, 3, 1),
+(10, '2026-10-07 09:30:00', '2026-10-07 09:50:00', 1, 4, 2, 5),
+(11, '2026-10-08 18:00:00', '2026-10-08 18:40:00', 4, 8, 3, 2),
+(12, '2026-10-10 10:00:00', NULL, 5, 7, 5, NULL);
 
 --
 -- Índices para tablas volcadas
