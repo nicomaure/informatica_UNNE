@@ -65,16 +65,21 @@ CREATE TABLE usuario_medio_pago (
 -- VIAJE: entidad central del negocio.
 -- Dos FK a estacion con roles distintos (origen y destino).
 -- RESTRICT en todas: no se pierde el historial de viajes.
--- fecha_fin y destino NOT NULL: el viaje se registra completo al devolver la bici.
+-- fecha_fin y destino admiten NULL: un viaje EN CURSO todavia no tiene
+-- fin ni estacion de destino. Se cargan juntos al devolver la bici
+-- (chk_viaje_en_curso: los dos NULL o los dos con valor).
 CREATE TABLE viaje (
     id                  INT AUTO_INCREMENT PRIMARY KEY,
     fecha_inicio        DATETIME NOT NULL,
-    fecha_fin           DATETIME NOT NULL,
+    fecha_fin           DATETIME NULL DEFAULT NULL,
     id_usuario          INT      NOT NULL,
     id_bicicleta        INT      NOT NULL,
     id_estacion_origen  INT      NOT NULL,
-    id_estacion_destino INT      NOT NULL,
-    CONSTRAINT chk_viaje_fechas CHECK (fecha_fin >= fecha_inicio),
+    id_estacion_destino INT      NULL DEFAULT NULL,
+    CONSTRAINT chk_viaje_fechas
+        CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio),
+    CONSTRAINT chk_viaje_en_curso
+        CHECK ((fecha_fin IS NULL) = (id_estacion_destino IS NULL)),
     CONSTRAINT fk_viaje_usuario FOREIGN KEY (id_usuario)
         REFERENCES usuario (id) ON DELETE RESTRICT,
     CONSTRAINT fk_viaje_bici FOREIGN KEY (id_bicicleta)
@@ -146,16 +151,17 @@ INSERT INTO usuario_medio_pago (id_usuario, numero_tarjeta) VALUES
 -- Cada bici queda en la estacion destino de su ultimo viaje
 -- (B007 esta en uso y conserva la estacion de la que fue retirada)
 INSERT INTO bicicleta (numero_serie, estado, id_estacion) VALUES
-    ('B001', 'DISPONIBLE',       1),
-    ('B002', 'DISPONIBLE',       3),
+    ('B001', 'DISPONIBLE',       3),
+    ('B002', 'DISPONIBLE',       1),
     ('B003', 'EN MANTENIMIENTO', 1),
-    ('B004', 'DISPONIBLE',       2),
+    ('B004', 'DISPONIBLE',       5),
     ('B005', 'DISPONIBLE',       5),
     ('B006', 'DISPONIBLE',       4),
     ('B007', 'EN USO',           5),
-    ('B008', 'DISPONIBLE',       3);
+    ('B008', 'DISPONIBLE',       2);
 
 -- Viajes: (inicio, fin, id_usuario, id_bicicleta, id_origen, id_destino)
+-- 12 viajes: 11 terminados y 1 en curso (el ultimo, sin fin ni destino)
 INSERT INTO viaje (fecha_inicio, fecha_fin, id_usuario, id_bicicleta,
                    id_estacion_origen, id_estacion_destino) VALUES
     ('2026-10-01 08:00:00', '2026-10-01 08:25:00', 1, 1, 1, 2),
@@ -164,7 +170,12 @@ INSERT INTO viaje (fecha_inicio, fecha_fin, id_usuario, id_bicicleta,
     ('2026-10-03 09:00:00', '2026-10-03 09:20:00', 3, 4, 5, 2),
     ('2026-10-03 12:00:00', '2026-10-03 12:30:00', 4, 5, 3, 5),
     ('2026-10-04 08:15:00', '2026-10-04 08:50:00', 5, 8, 4, 3),
-    ('2026-10-04 17:30:00', '2026-10-04 18:05:00', 6, 6, 1, 4);
+    ('2026-10-04 17:30:00', '2026-10-04 18:05:00', 6, 6, 1, 4),
+    ('2026-10-05 07:45:00', '2026-10-05 08:10:00', 2, 1, 1, 3),
+    ('2026-10-06 13:00:00', '2026-10-06 13:45:00', 3, 2, 3, 1),
+    ('2026-10-07 09:30:00', '2026-10-07 09:50:00', 1, 4, 2, 5),
+    ('2026-10-08 18:00:00', '2026-10-08 18:40:00', 4, 8, 3, 2),
+    ('2026-10-10 10:00:00', NULL,                  5, 7, 5, NULL);
 
 -- Tareas: el numero_tarea arranca de nuevo en cada estacion
 INSERT INTO tarea_mantenimiento (id_estacion, numero_tarea, fecha, descripcion, id_operario) VALUES
@@ -188,7 +199,7 @@ FROM viaje v
 JOIN usuario   u  ON u.id  = v.id_usuario
 JOIN bicicleta b  ON b.id  = v.id_bicicleta
 JOIN estacion  eo ON eo.id = v.id_estacion_origen
-JOIN estacion  ed ON ed.id = v.id_estacion_destino
+LEFT JOIN estacion ed ON ed.id = v.id_estacion_destino  -- LEFT: incluye el viaje en curso
 ORDER BY v.id;
 
 SELECT e.codigo_estacion, t.numero_tarea, t.fecha, t.descripcion,
