@@ -23,8 +23,9 @@ USE bicicletas_compartidas;
 -- 1. ESTRUCTURA (DDL)
 -- -----------------------------------------------------------------------------
 
--- Primero se borra el CHECK viejo (fecha_fin >= fecha_inicio)
-ALTER TABLE viaje DROP CHECK chk_viaje_fechas;
+-- Primero se borra el CHECK viejo (fecha_fin >= fecha_inicio).
+-- El servidor es MariaDB: usa DROP CONSTRAINT (DROP CHECK es solo de MySQL).
+ALTER TABLE viaje DROP CONSTRAINT chk_viaje_fechas;
 
 -- Fin y destino opcionales mientras el viaje esta en curso.
 -- id_estacion_destino es FK: se desactiva el control de FK solo durante
